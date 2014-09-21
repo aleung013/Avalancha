@@ -60,21 +60,24 @@ if __name__ == "__main__":
             broadcast_data(None,"game_start")
             player_turn = 0;
             while True:
+                cur_player = (player_turn%game_size)+1
                 try:
-                    read_sockets[(player_turn%game_size)+1].send("play_round")
+                    read_sockets[cur_player].send("play_round")
                 except:
-                    print "\nlost connection from player ",player_turn%game_size
+                    print "\nlost connection from player ",cur_player-1
+                    CONNECTION_LIST.remove(read_sockets[cur_player])
                     break
                 try:
-                    response = read_sockets[(player_turn%game_size)+1].recv(RECV_BUFFER)
+                    response = read_sockets[cur_player].recv(RECV_BUFFER)
                     if response == "bull_":
-                        broadcast_data(read_sockets[(player_turn%game_size)+1],"end_round")
+                        broadcast_data(read_sockets[cur_player],"end_round")
                         break
                     else:
-                        broadcast_data(read_sockets[(player_turn%game_size)+1],response)
+                        broadcast_data(read_sockets[cur_player],response)
                         player_turn += 1
                 except:
-                    print "\nlost connection from player or lack of response ",player_turn%game_size
+                    print "\nlost connection from player or lack of response ",cur_player-1
+                    CONNECTION_LIST.remove(read_sockets[cur_player])
                     break
                     
     s.close()
