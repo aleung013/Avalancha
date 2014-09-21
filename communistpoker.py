@@ -32,7 +32,7 @@ def roundData(playerlist,startcards,endcards,cardsperplayer):
 #returns False if the combo is found
 #returns True if the combo is not found (is a bs call)
 def bull(playerCards,combo):
-    return !checkCards(playerCards,combo)
+    return not checkCards(playerCards,combo)
 
 #returns newCall > prevCombo
 def makeCall(newCall,prevCombo):
@@ -51,12 +51,12 @@ def makeCall(newCall,prevCombo):
                 VALUES[newCall[3]] > VALUES[newCall[3]])
     elif(newCall[0] == COMBOS[7]):#Straight Flush
         return (VALUES[newCall[3]] >= VALUES[prevCombo[3]] and
-                SUITS[newCall[1] >= SUITS[newCall[1]])
+                SUITS[newCall[1]] >= SUITS[prevCombo[1]])
     
 
 
 def endRound(playerlist,startcards,endcards,cardsperplayer,losingPlayer):
-    cardsperplayer[losingPlayer]++
+    cardsperplayer[losingPlayer]+=1
     for i in range(len(playerlist)):
         if (cardsperplayer[i] > endcards):
             cardsperplayer[i] = 0
