@@ -1,4 +1,16 @@
-import socket, select, string, sys
+import socket, select, string, sys, pickle
+from communistpoker import COMBOS
+from deck import VALUES,SUITS
+def parseCombo(msg):
+    combo = []
+    for i in range(len(COMBOS)):
+        if(msg.find(COMBOS[i])):
+            combo[0] = COMBOS[i]
+    if(combo[1] == COMBOS[3]):#Flush
+        for i in range(len(SUITS)):
+            if(msg.find(SUITS[i])):
+                combo[1] = COMBOS[i]
+                
 
 def prompt():
     sys.stdout.write('<You> ')
@@ -17,11 +29,10 @@ if __name__ == "__main__":
     try:
         s.connect((host,port))
     except:
-        print 'Unable to connect'
+        print 'Unable to connect.'
         sys.exit()
 
-    print 'Connected to remote host. Start sending messages'
-    prompt()
+    print 'Connected to server.'
 
     while True:
         try:
@@ -31,11 +42,31 @@ if __name__ == "__main__":
                 if sock == s:
                     data = sock.recv(4096)
                     if not data:
-                        print '\nDisconnected from chat server'
+                        print '\nDisconnected from server.'
                         sys.exit()
+                    elif (data == "game_size"):
+                        sys.stdout.write("How big should the game be?\n")
+                        prompt()
+                        msg = sys.stdin.readline()
+                        s.send(msg)
+                    elif (data == "bull_"):
+                        sys.stdout.write("BULLSHIT")
+                    elif (data == "send_cards"):
+                        print "waiting for cards"
+                        sock.send("ready for cards")
+                        data = sock.recv(4096)
+                        sys.stdout.write("Cards received: \n")
+                        serStr = pickle.loads(data)
+                        print serStr
+                        #sys.stdout.write(repr(serStr))
+                    elif (data == "play_round"):
+                        data = sock.recv(4096) #get the old combo
+                        sys.stdout.write("What do you call?\n")
+                        msg = sys.stdin.readline()
+                        combo = parseCombo(msg)
+                        s.send(combo)
                     else:
                         sys.stdout.write(data)
-                        prompt()
                 else:
                     msg = sys.stdin.readline()
                     s.send(msg)
