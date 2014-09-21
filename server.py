@@ -67,7 +67,7 @@ if __name__ == "__main__":
             data=roundData(player_names,1,5,playerNumCard)
             for i in range(len(player_names)):
                 try:
-                    read_sockets[i].send(data[1][i])
+                    CONNECTIONS_LIST[i].send(data[1][i])
                 except:
                     print "couldn't send hand to player\n"
                     break
@@ -75,19 +75,19 @@ if __name__ == "__main__":
             while True:
                 cur_player = (player_turn%game_size)+1
                 try:
-                    read_sockets[cur_player].send("play_round")
+                    CONNECTIONS_LIST[cur_player].send("play_round")
                 except:
                     print "\nlost connection from player ",cur_player-1
                     player_names.remove(player_names[cur_player])
                     CONNECTION_LIST.remove(read_sockets[cur_player])
                     break
                 try:
-                    response = read_sockets[cur_player].recv(RECV_BUFFER)
+                    response = CONNECTIONS_LIST[cur_player].recv(RECV_BUFFER)
                     if response == "bull_":
                         try:
-                            read_sockets[cur_player].send("send_hand")
-                            hand = read_sockets[cur_player].recv(RECV_BUFFER)
-                            combo = read_sockets[cur_player].recv(RECV_BUFFER)
+                            CONNECTIONS_LIST[cur_player].send("send_hand")
+                            hand = CONNECTIONS_LIST[cur_player].recv(RECV_BUFFER)
+                            combo = CONNECTIONS[cur_player].recv(RECV_BUFFER)
                             if not bull(hand,combo):
                                  endRound(player_names,1,5,playerNumCard,cur_player-1)
                             else:
