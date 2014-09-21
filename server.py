@@ -24,16 +24,20 @@ if __name__ == "__main__":
 
     CONNECTION_LIST.append(s)
     print "Game server started on port",port
+    print len(CONNECTION_LIST)
+    print CONNECTION_LIST
     
     game_size = 10;
     playerNumCard=[]
     while True:
-        read_sockets,write_sockets,error_sockets = select.select(CONNECTION_LIST,[],[])
-        if(len(CONNECTION_LIST) < game_size):  #if game is not full
+        if(len(CONNECTION_LIST)-1 < game_size):  #if game is not full
+            read_sockets,write_sockets,error_sockets = select.select(CONNECTION_LIST,[],[])
             for sock in read_sockets:
                 if sock == s:
                     c, addr = s.accept()
                     CONNECTION_LIST.append(c)
+                    print len(CONNECTION_LIST)
+                    print CONNECTION_LIST
                     print 'Got connection from', addr
                     broadcast_data(c,"\n[%s:%s] has connected" % addr)
                     if len(CONNECTION_LIST)==2:
@@ -62,7 +66,7 @@ if __name__ == "__main__":
         else: #game is full -> game start now
             print "Beginning game"
             if len(playerNumCard)==0:
-                playerNumCard = [1 for i in range(len(CONNECTION_LIST))]
+                playerNumCard = [1 for i in range(len(CONNECTION_LIST)-1)]
             data=roundData(CONNECTION_LIST[1:],1,5,playerNumCard)
             for i in range(len(CONNECTION_LIST)-1):
                 try:
@@ -74,13 +78,13 @@ if __name__ == "__main__":
             while True:
                 cur_player = (player_turn%game_size)
                 try:
-                    CONNECTION_LIST[cur_player].send("play_round")
+                    CONNECTION_LIST[cur_player+1].send("play_round")
                 except:
                     print "\nlost connection from player ",cur_player
                     CONNECTION_LIST.remove(read_sockets[cur_player])
                     break
                 try:
-                    response = CONNECTION_LIST[cur_player].recv(RECV_BUFFER)
+                    response = CONNECTION_LIST[cur_player+1].recv(RECV_BUFFER)
                     if response == "bull_":
                         try:
                             CONNECTION_LIST[cur_player].send("send_hand")
