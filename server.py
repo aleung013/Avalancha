@@ -25,12 +25,15 @@ if __name__ == "__main__":
     print "Chat server started on port",port
     
     game_size = 10;
+    player_names = []
+    playerNumCard=[]
     while True:
         read_sockets,write_sockets,error_sockets = select.select(CONNECTION_LIST,[],[])
         if(len(CONNECTION_LIST)-1< game_size):  #if game is not full
             for sock in read_sockets:
                 if sock == s:
                     c, addr = s.accept()
+                    player_names.append(addr)
                     CONNECTION_LIST.append(c)
                     print 'Got connection from', addr
                     broadcast_data(c,"\n[%s:%s] has connected\n" % addr)
@@ -48,16 +51,26 @@ if __name__ == "__main__":
                         elif data == "quit":
                             print addr, "has gone offline"
                             broadcast_data(sock,"\nClient (%s, %s) is offline\n" % addr)
+                            player_names.remove(player_names[CONNECTION_LIST.index(sock)])
                             CONNECTION_LIST.remove(sock)
                             #c.close() cause closed by the other side? supposedly
                     except:
                         print "Lost connection from", addr
                         broadcast_data(sock,"Client (%s, %s) is offline\n" % addr)
-                        CONNECTION_LIST.remove(sock)
+                        player_names.remove(player_names[CONNECTION_LIST.index(sock)])
+                        CONNECTION_LIST.remove(sock)                        
                         c.close()
 
         else: #game is full -> game start now
-            broadcast_data(None,"game_start")
+            if len(playerNumCard)==0:
+                playerNumCard = [1 for i in range(len(playerlist))]
+            data=roundData(player_names,1,5,playerNumCard)
+            for i in range(len(player_names)):
+                try:
+                    read_sockets[i].send(data[1][i])
+                except:
+                    print "couldn't send hand to player\n"
+                    break
             player_turn = 0;
             while True:
                 cur_player = (player_turn%game_size)+1
@@ -65,18 +78,20 @@ if __name__ == "__main__":
                     read_sockets[cur_player].send("play_round")
                 except:
                     print "\nlost connection from player ",cur_player-1
+                    player_names.remove(player_names[cur_player])
                     CONNECTION_LIST.remove(read_sockets[cur_player])
                     break
                 try:
                     response = read_sockets[cur_player].recv(RECV_BUFFER)
                     if response == "bull_":
-                        broadcast_data(read_sockets[cur_player],"end_round")
+                        endRoud(player_names,1,5,playerNumCard,cur_player-1)
                         break
                     else:
                         broadcast_data(read_sockets[cur_player],response)
                         player_turn += 1
                 except:
                     print "\nlost connection from player or lack of response ",cur_player-1
+                    player_names.remove(player_names[cur_player])
                     CONNECTION_LIST.remove(read_sockets[cur_player])
                     break
                     
