@@ -21,16 +21,25 @@ def startRound(numplayers,cardsperplayer):
     players = dealUneven(deck,numplayers,cardsperplayer)
     return players
     
-def run(playerlist,startcards,endcards,cardsperplayer):
+def roundData(playerlist,startcards,endcards,cardsperplayer):
     players = startRound(len(playerlist),cardsperplayer)
     currplayer = 0
     for i in range(len(playerlist)):
         print playerlist[i],':',players[i]
-    #while True:
+    return (playerlist,players)
 
-
-def countValue(cards,value,cap = 8):#Does not count 2's
-    s = sum(1 for card in cards if card['value'] == value)
+def endRound(playerlist,startcards,endcards,cardsperplayer,losingPlayer):
+    cardsperplayer[losingPlayer]++
+    for i in range(len(playerlist)):
+        if (cardsperplayer[i] > endcards):
+            cardsperplayer[i] = 0
+    return
+    
+def countValue(cards,value,cap = 8,suit = None):#Does not count 2's
+    if(suit):
+        s = sum(1 for card in cards if card['value'] == value and card['suit'] == suit)
+    else:
+        s = sum(1 for card in cards if card['value'] == value)
     if s > cap:
         s = cap
     return s
@@ -63,7 +72,11 @@ def checkCards(players,combo):
     elif c == COMBOS[6]:#BOMB
         return countValue(cards,combo[2],4) + countValue(cards,combo[3],1) + countValue(cards,'2') >= 5
     elif c == COMBOS[7]:#STRAIGHTFLUSH
-        print "Straight Flush code is currently being developed, please call something else"
+        suit = combo[1]
+        start = VALUES.index(combo[2])
+        end = VALUES.index(combo[3])
+        for i in range(start,end+1):
+                count += countValue(cards,Values[i],1,suit)
         return None
     elif c == COMBOS[8]:#FIVEKIND
         return countValue(cards,combo[2]) + countValue(cards,'2') >= 5
