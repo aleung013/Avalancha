@@ -1,4 +1,4 @@
-import socket, select, string, sys
+import socket, select, string, sys,pickle
 
 def prompt():
     sys.stdout.write('<You> ')
@@ -40,9 +40,13 @@ if __name__ == "__main__":
                     elif (data == "bull_"):
                         sys.stdout.write("BULLSHIT")
                     elif (data == "send_cards"):
+                        print "waiting for cards"
+                        sock.send("ready for cards")
                         data = sock.recv(4096)
                         sys.stdout.write("Cards received: \n")
-                        sys.stdout.write(data)
+                        serStr = pickle.loads(data)
+                        print serStr
+                        #sys.stdout.write(repr(serStr))
                     else:
                         sys.stdout.write(data)
                 else:
