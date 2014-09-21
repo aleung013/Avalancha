@@ -13,7 +13,7 @@ COMBOS = ['SINGLE',
           'SEVENKIND',
           'EIGHTKIND']
 
-def startRound(numplayers,cardsperplayer):
+def startRound(numplayers,cardsperplayer): #startRound(3,[1,2,4])
     deck = standardDeck()
     print "Shuffling..."
     shuffle(deck)
@@ -24,9 +24,36 @@ def startRound(numplayers,cardsperplayer):
 def roundData(playerlist,startcards,endcards,cardsperplayer):
     players = startRound(len(playerlist),cardsperplayer)
     currplayer = 0
-    for i in range(len(playerlist)):
+    for i in range(len(playerlist)):         #Print stuff for testing
         print playerlist[i],':',players[i]
     return (playerlist,players)
+
+#Called if someone calls bs
+#returns False if the combo is found
+#returns True if the combo is not found (is a bs call)
+def bull(playerCards,combo):
+    return !checkCards(playerCards,combo)
+
+#returns newCall > prevCombo
+def makeCall(newCall,prevCombo):
+    if(COMBOS[newCall[0]] < COMBOS[prevCombo[0]]):
+        return False
+    elif(COMBOS[newCall[0]] > COMBOS[prevCombo[0]]):
+        return True
+    elif(newCall[0] == COMBOS[0] or newCall[0] == COMBOS[1] or newCall[0] == COMBOS[2] or newCall[0] == COMBOS[8] or newCall[0] == COMBOS[9] or newCall[0] == COMBO[10] or newCall[0] == COMBOS[11]):#Single,Double,Triple,5,6,7,8 of a kind
+        return VALUES[newCall[2]] > VALUES[prevCombo[2]]
+    elif(newCall[0] == COMBOS[3]):#Flush
+        return SUITS[newCall[1]] > SUITS[prevCombo[1]]
+    elif(newCall[0] == COMBOS[4]):#Straight
+        return VALUES[newCall[3]] > VALUES[prevCombo[3]]
+    elif(newCall[0] == COMBOS[5] or newCall[0] == COMBOS[6]):#Full House or Bomb
+        return (VALUES[newCall[2]] >= VALUES[prevCombo[2]] and
+                VALUES[newCall[3]] > VALUES[newCall[3]])
+    elif(newCall[0] == COMBOS[7]):#Straight Flush
+        return (VALUES[newCall[3]] >= VALUES[prevCombo[3]] and
+                SUITS[newCall[1] >= SUITS[newCall[1]])
+    
+
 
 def endRound(playerlist,startcards,endcards,cardsperplayer,losingPlayer):
     cardsperplayer[losingPlayer]++
@@ -76,8 +103,8 @@ def checkCards(players,combo):
         start = VALUES.index(combo[2])
         end = VALUES.index(combo[3])
         for i in range(start,end+1):
-                count += countValue(cards,Values[i],1,suit)
-        return None
+            count += countValue(cards,Values[i],1,suit)
+        return count + countValue(cards,'2') >= 5
     elif c == COMBOS[8]:#FIVEKIND
         return countValue(cards,combo[2]) + countValue(cards,'2') >= 5
     elif c == COMBOS[9]:#SIXKIND
