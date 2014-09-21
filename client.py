@@ -6,10 +6,20 @@ def parseCombo(msg):
     for i in range(len(COMBOS)):
         if(msg.find(COMBOS[i])):
             combo[0] = COMBOS[i]
-    if(combo[1] == COMBOS[3]):#Flush
+    if(combo[0] == COMBOS[3] or combo[0] == COMBOS[7]):#Flush or straight flush
         for i in range(len(SUITS)):
             if(msg.find(SUITS[i])):
                 combo[1] = COMBOS[i]
+    elif(combo[0] != COMBOS[4] or combo[0] != COMBOS[5] or combo[0] != COMBOS[6]): #single,double,triple,five,six,seven,eight of a kind
+        for i in range(len(VALUES)):
+            if(msg.find(VALUES[i])):
+                combo[2] = i
+    elif(combo[0] == COMBOS[4]):#Straight
+        for i in range(len(VALUES)):
+            if(msg.find(VALUES[i])):
+                combo[2] = i
+                combo[3] = i + 4
+                break
                 
 
 def prompt():
