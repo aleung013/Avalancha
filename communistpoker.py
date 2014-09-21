@@ -21,20 +21,25 @@ def startRound(numplayers,cardsperplayer):
     players = dealUneven(deck,numplayers,cardsperplayer)
     return players
     
-def round(playerlist,startcards,endcards,cardsperplayer):
+def roundData(playerlist,startcards,endcards,cardsperplayer):
     players = startRound(len(playerlist),cardsperplayer)
     currplayer = 0
     for i in range(len(playerlist)):
         print playerlist[i],':',players[i]
-        
     return (playerlist,players)
 
-
+def endRound(playerlist,startcards,endcards,cardsperplayer,losingPlayer):
+    cardsperplayer[losingPlayer]++
+    for i in range(len(playerlist)):
+        if (cardsperplayer[i] > endcards):
+            cardsperplayer[i] = 0
+    return
+    
 def countValue(cards,value,cap = 8,suit = None):#Does not count 2's
     if(suit):
         s = sum(1 for card in cards if card['value'] == value and card['suit'] == suit)
     else:
-        s = sum(1 for card in cards if card['value'] == value
+        s = sum(1 for card in cards if card['value'] == value)
     if s > cap:
         s = cap
     return s
