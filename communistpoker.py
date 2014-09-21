@@ -52,7 +52,6 @@ def makeCall(newCall,prevCombo):
     elif(newCall[0] == COMBOS[7]):#Straight Flush
         return (VALUES[newCall[3]] >= VALUES[prevCombo[3]] and
                 SUITS[newCall[1]] >= SUITS[prevCombo[1]])
-    
 
 
 def endRound(playerlist,startcards,endcards,cardsperplayer,losingPlayer):
