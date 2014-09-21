@@ -1,4 +1,4 @@
-import socket, select,communistpoker.py
+import socket, select,communistpoker
 
 def broadcast_data(sock,message):
     for socket in CONNECTION_LIST:
@@ -84,8 +84,19 @@ if __name__ == "__main__":
                 try:
                     response = read_sockets[cur_player].recv(RECV_BUFFER)
                     if response == "bull_":
-                        endRoud(player_names,1,5,playerNumCard,cur_player-1)
-                        break
+                        try:
+                            read_sockets[cur_player].send("send_hand")
+                            hand = read_sockets[cur_player].recv(RECV_BUFFER)
+                            combo = read_sockets[cur_player].recv(RECV_BUFFER)
+                            if not bull(hand,combo):
+                                 endRound(player_names,1,5,playerNumCard,cur_player-1)
+                            else:
+                                endRound(player_names,1,5,playerNumCard,cur_player-2)
+                        except:
+                            print "\nlost connection to player",cur_player
+                            player_names.remove(player_names[cur_player])
+                            CONNECTION_LIST.remove(read_sockets[cur_player])
+                            break                      
                     else:
                         broadcast_data(read_sockets[cur_player],response)
                         player_turn += 1
