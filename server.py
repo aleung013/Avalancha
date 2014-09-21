@@ -1,4 +1,4 @@
-import socket, select
+import socket, select,sys,pickle
 from communistpoker import roundData, endRound, bull
 
 def broadcast_data(sock,message):
@@ -24,8 +24,6 @@ if __name__ == "__main__":
 
     CONNECTION_LIST.append(s)
     print "Game server started on port",port
-    print len(CONNECTION_LIST)
-    print CONNECTION_LIST
     
     game_size = 10;
     playerNumCard=[]
@@ -36,8 +34,6 @@ if __name__ == "__main__":
                 if sock == s:
                     c, addr = s.accept()
                     CONNECTION_LIST.append(c)
-                    print len(CONNECTION_LIST)
-                    print CONNECTION_LIST
                     print 'Got connection from', addr
                     broadcast_data(c,"\n[%s:%s] has connected" % addr)
                     if len(CONNECTION_LIST)==2:
@@ -69,11 +65,14 @@ if __name__ == "__main__":
                 playerNumCard = [1 for i in range(len(CONNECTION_LIST)-1)]
             data=roundData(CONNECTION_LIST[1:],1,5,playerNumCard)
             for i in range(len(CONNECTION_LIST)-1):
+                CONNECTION_LIST[i+1].send("send_cards")
                 try:
-                    CONNECTION_LIST[i+1].send(data[1][i])
+                    CONNECTION_LIST[i+1].recv(RECV_BUFFER)
+                    serStr = pickle.dumps(data[1][i])
+                    CONNECTION_LIST[i+1].send(serStr)
                 except:
                     print "couldn't send hand to player\n"
-                    break
+                    exit(1)
             player_turn = 0;
             while True:
                 cur_player = (player_turn%game_size)
