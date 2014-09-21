@@ -1,4 +1,4 @@
-import socket, select
+import socket, select,communistpoker.py
 
 def broadcast_data(sock,message):
     for socket in CONNECTION_LIST:
