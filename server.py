@@ -26,7 +26,6 @@ if __name__ == "__main__":
     print "Game server started on port",port
     
     game_size = 10;
-    player_names = []
     playerNumCard=[]
     while True:
         read_sockets,write_sockets,error_sockets = select.select(CONNECTION_LIST,[],[])
@@ -34,7 +33,6 @@ if __name__ == "__main__":
             for sock in read_sockets:
                 if sock == s:
                     c, addr = s.accept()
-                    player_names.append(addr)
                     CONNECTION_LIST.append(c)
                     print 'Got connection from', addr
                     broadcast_data(c,"\n[%s:%s] has connected" % addr)
@@ -53,24 +51,22 @@ if __name__ == "__main__":
                         elif data == "quit":
                             print addr, "has gone offline"
                             broadcast_data(sock,"\nClient (%s, %s) is offline\n" % addr)
-                            player_names.remove(player_names[CONNECTION_LIST.index(sock)])
                             CONNECTION_LIST.remove(sock)
                             #c.close() cause closed by the other side? supposedly
                     except:
                         print "Lost connection from", addr
                         broadcast_data(sock,"Client (%s, %s) is offline\n" % addr)
-                        player_names.remove(player_names[CONNECTION_LIST.index(sock)])
                         CONNECTION_LIST.remove(sock)                        
                         c.close()
 
         else: #game is full -> game start now
             print "Beginning game"
             if len(playerNumCard)==0:
-                playerNumCard = [1 for i in range(len(player_names))]
-            data=roundData(player_names,1,5,playerNumCard)
-            for i in range(len(player_names)):
+                playerNumCard = [1 for i in range(len(CONNECTION_LIST))]
+            data=roundData(CONNECTION_LIST[1:],1,5,playerNumCard)
+            for i in range(len(CONNECTION_LIST)-1):
                 try:
-                    CONNECTION_LIST[i].send(data[1][i])
+                    CONNECTION_LIST[i+1].send(data[1][i])
                 except:
                     print "couldn't send hand to player\n"
                     break
@@ -81,7 +77,6 @@ if __name__ == "__main__":
                     CONNECTION_LIST[cur_player].send("play_round")
                 except:
                     print "\nlost connection from player ",cur_player
-                    player_names.remove(player_names[cur_player])
                     CONNECTION_LIST.remove(read_sockets[cur_player])
                     break
                 try:
@@ -89,15 +84,14 @@ if __name__ == "__main__":
                     if response == "bull_":
                         try:
                             CONNECTION_LIST[cur_player].send("send_hand")
-                            hand = CONNECTIONS_LIST[cur_player].recv(RECV_BUFFER)
-                            combo = CONNECTIONS[cur_player].recv(RECV_BUFFER)
+                            hand = CONNECTION_LIST[cur_player].recv(RECV_BUFFER)
+                            combo = CONNECTION_LIST[cur_player].recv(RECV_BUFFER)
                             if not bull(hand,combo):
-                                 endRound(player_names,1,5,playerNumCard,cur_player-1)
+                                 endRound(CONNECTION_LIST[1:],1,5,playerNumCard,cur_player-1)
                             else:
-                                endRound(player_names,1,5,playerNumCard,cur_player-2)
+                                endRound(CONNECTION_LIST[1:],1,5,playerNumCard,cur_player-2)
                         except:
                             print "\nlost connection to player",cur_player
-                            player_names.remove(player_names[cur_player])
                             CONNECTION_LIST.remove(read_sockets[cur_player])
                             break                      
                     else:
@@ -105,7 +99,6 @@ if __name__ == "__main__":
                         player_turn += 1
                 except:
                     print "\nlost connection from player or lack of response ",cur_player-1
-                    player_names.remove(player_names[cur_player])
                     CONNECTION_LIST.remove(read_sockets[cur_player])
                     break
                     
